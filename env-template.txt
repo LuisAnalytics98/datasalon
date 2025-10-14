@@ -1,0 +1,16 @@
+# Supabase
+VITE_SUPABASE_URL=https://zclfcywaithrkklimalw.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpjbGZjeXdhaXRocmtrbGltYWx3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk3Njc1MDYsImV4cCI6MjA3NTM0MzUwNn0.Y5iy0yICIChUfnKRZJXEtR4KLhVr9GfVdOmya7exYL8
+
+# JWT
+VITE_JWT_SECRET=tu_jwt_secret_seguro
+
+# Email (Opcional)
+VITE_EMAIL_HOST=smtp.gmail.com
+VITE_EMAIL_PORT=587
+VITE_EMAIL_USER=tu_email@gmail.com
+VITE_EMAIL_PASS=tu_app_password
+
+# Stripe (Opcional)
+VITE_STRIPE_SECRET_KEY=sk_test_...
+VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
