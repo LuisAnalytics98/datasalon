@@ -28,9 +28,31 @@ const AdminDashboard: React.FC = () => {
 
   useEffect(() => {
     const loadDashboardData = async () => {
-      if (!salon) return;
-      
+      // Add timeout to prevent infinite loading
+      const timeout = setTimeout(() => {
+        console.log('Dashboard loading timeout reached');
+        setLoading(false);
+        setNeedsSetup(true);
+      }, 10000); // 10 second timeout
+
       try {
+        // In development mode, skip salon dependency
+        if (import.meta.env.DEV) {
+          console.log('Development mode: Skipping salon dependency');
+          setNeedsSetup(true);
+          setLoading(false);
+          clearTimeout(timeout);
+          return;
+        }
+
+        if (!salon) {
+          console.log('No salon data available');
+          setNeedsSetup(true);
+          setLoading(false);
+          clearTimeout(timeout);
+          return;
+        }
+        
         const today = new Date().toISOString().split('T')[0];
         const dashboardStats = await dashboardService.getStats(salon.id, today);
         setStats(dashboardStats);
@@ -48,6 +70,7 @@ const AdminDashboard: React.FC = () => {
         setNeedsSetup(true);
       } finally {
         setLoading(false);
+        clearTimeout(timeout);
       }
     };
 
@@ -68,6 +91,7 @@ const AdminDashboard: React.FC = () => {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400 mx-auto mb-4"></div>
           <p className="text-gray-400">Cargando dashboard...</p>
+          <p className="text-gray-500 text-sm mt-2">Si esto tarda más de 10 segundos, se redirigirá automáticamente</p>
         </div>
       </div>
     );
@@ -107,6 +131,25 @@ const AdminDashboard: React.FC = () => {
           </div>
         </div>
       </header>
+
+      {/* Welcome message for new admins */}
+      {needsSetup && (
+        <div className="bg-yellow-400/10 border border-yellow-400/20 p-4 m-4 rounded-lg">
+          <div className="flex items-center space-x-3">
+            <Wrench className="w-6 h-6 text-yellow-400" />
+            <div>
+              <h3 className="text-lg font-semibold text-yellow-400">Configuración Inicial Requerida</h3>
+              <p className="text-gray-300">Tu salón necesita ser configurado. Haz clic en "Configuración" para comenzar.</p>
+            </div>
+            <button
+              onClick={() => navigate('/admin/setup')}
+              className="ml-auto bg-yellow-400 text-black px-4 py-2 rounded-lg font-semibold hover:bg-yellow-500 transition-colors"
+            >
+              Configurar Salón
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="flex">
         {/* Sidebar */}

@@ -11,6 +11,7 @@ import { useToast } from '../../hooks/use-toast';
 import { useAuth } from '../../context/AuthContext';
 import { serviceService } from '../../services/api';
 import { salonAccountService } from '../../services/salonAccountService';
+import BackToHomeButton from '../../components/BackToHomeButton';
 import { 
   Building2, 
   Scissors, 
@@ -19,7 +20,12 @@ import {
   CheckCircle,
   Plus,
   Trash2,
-  Save
+  Save,
+  LogOut,
+  Bell,
+  Settings,
+  ArrowLeft,
+  ArrowRight
 } from 'lucide-react';
 
 interface Service {
@@ -51,7 +57,7 @@ interface WorkingHours {
 const InitialSetupPage: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user, salon } = useAuth();
+  const { user, salon, logout } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -202,6 +208,24 @@ const InitialSetupPage: React.FC = () => {
     setCurrentStep(prev => Math.max(prev - 1, 1));
   };
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+      toast({
+        title: "Sesión cerrada",
+        description: "Has cerrado sesión exitosamente",
+      });
+      navigate('/');
+    } catch (error) {
+      console.error('Error logging out:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo cerrar la sesión",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleCompleteSetup = async () => {
     if (!salon?.id) {
       toast({
@@ -270,51 +294,56 @@ const InitialSetupPage: React.FC = () => {
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="salonName">Nombre del Salón *</Label>
+                <Label htmlFor="salonName" className="text-gray-300">Nombre del Salón *</Label>
                 <Input
                   id="salonName"
                   value={salonInfo.name}
                   onChange={(e) => handleSalonInfoChange('name', e.target.value)}
                   placeholder="Nombre de tu salón"
+                  className="bg-gray-800 border-gray-600 text-white placeholder-gray-400 focus:border-yellow-400 focus:ring-yellow-400"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="salonPhone">Teléfono *</Label>
+                <Label htmlFor="salonPhone" className="text-gray-300">Teléfono *</Label>
                 <Input
                   id="salonPhone"
                   value={salonInfo.phone}
                   onChange={(e) => handleSalonInfoChange('phone', e.target.value)}
                   placeholder="+506 8888 8888"
+                  className="bg-gray-800 border-gray-600 text-white placeholder-gray-400 focus:border-yellow-400 focus:ring-yellow-400"
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="salonAddress">Dirección *</Label>
+              <Label htmlFor="salonAddress" className="text-gray-300">Dirección *</Label>
               <Input
                 id="salonAddress"
                 value={salonInfo.address}
                 onChange={(e) => handleSalonInfoChange('address', e.target.value)}
                 placeholder="Dirección completa del salón"
+                className="bg-gray-800 border-gray-600 text-white placeholder-gray-400 focus:border-yellow-400 focus:ring-yellow-400"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="salonEmail">Email</Label>
+              <Label htmlFor="salonEmail" className="text-gray-300">Email</Label>
               <Input
                 id="salonEmail"
                 type="email"
                 value={salonInfo.email}
                 onChange={(e) => handleSalonInfoChange('email', e.target.value)}
                 placeholder="info@tusalon.com"
+                className="bg-gray-800 border-gray-600 text-white placeholder-gray-400 focus:border-yellow-400 focus:ring-yellow-400"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="salonDescription">Descripción</Label>
+              <Label htmlFor="salonDescription" className="text-gray-300">Descripción</Label>
               <Textarea
                 id="salonDescription"
                 value={salonInfo.description}
                 onChange={(e) => handleSalonInfoChange('description', e.target.value)}
                 placeholder="Describe los servicios y características de tu salón"
                 rows={3}
+                className="bg-gray-800 border-gray-600 text-white placeholder-gray-400 focus:border-yellow-400 focus:ring-yellow-400"
               />
             </div>
           </div>
@@ -551,11 +580,46 @@ const InitialSetupPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-black text-white">
+      {/* Navigation Header */}
+      <nav className="bg-gray-900 border-b border-yellow-400/20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center">
+              <h1 className="text-2xl font-bold text-yellow-400">DataSalon</h1>
+              <span className="ml-4 px-3 py-1 bg-yellow-400/20 text-yellow-400 rounded-full text-sm font-medium">
+                Admin Setup
+              </span>
+            </div>
+            <div className="flex items-center space-x-4">
+              <BackToHomeButton variant="minimal" />
+              <button className="p-2 text-gray-400 hover:text-yellow-400 transition-colors">
+                <Bell className="w-6 h-6" />
+              </button>
+              <button className="p-2 text-gray-400 hover:text-yellow-400 transition-colors">
+                <Settings className="w-6 h-6" />
+              </button>
+              <button
+                onClick={handleLogout}
+                className="flex items-center space-x-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Cerrar Sesión</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <div className="max-w-4xl mx-auto p-6">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Configuración Inicial</h1>
-          <p className="text-gray-600">Configura tu salón para comenzar a recibir clientes</p>
+          <h1 className="text-3xl font-bold text-white mb-2">Configuración Inicial</h1>
+          <p className="text-gray-400">Configura tu salón para comenzar a recibir clientes</p>
+          {user && (
+            <p className="text-sm text-gray-500 mt-1">
+              Bienvenido, {user.firstName} {user.lastName}
+            </p>
+          )}
         </div>
 
         {/* Progress Steps */}
@@ -571,18 +635,18 @@ const InitialSetupPage: React.FC = () => {
                   <div className={`
                     flex items-center justify-center w-10 h-10 rounded-full border-2
                     ${isCompleted ? 'bg-green-500 border-green-500 text-white' : 
-                      isCurrent ? 'bg-blue-500 border-blue-500 text-white' : 
-                      'bg-white border-gray-300 text-gray-500'}
+                      isCurrent ? 'bg-yellow-400 border-yellow-400 text-black' : 
+                      'bg-gray-700 border-gray-600 text-gray-400'}
                   `}>
                     {isCompleted ? <CheckCircle className="w-5 h-5" /> : <Icon className="w-5 h-5" />}
                   </div>
                   <div className="ml-3">
-                    <p className={`text-sm font-medium ${isCurrent ? 'text-blue-600' : 'text-gray-500'}`}>
+                    <p className={`text-sm font-medium ${isCurrent ? 'text-yellow-400' : isCompleted ? 'text-green-400' : 'text-gray-400'}`}>
                       {step.title}
                     </p>
                   </div>
                   {index < steps.length - 1 && (
-                    <div className={`w-16 h-0.5 mx-4 ${isCompleted ? 'bg-green-500' : 'bg-gray-300'}`} />
+                    <div className={`w-16 h-0.5 mx-4 ${isCompleted ? 'bg-green-500' : 'bg-gray-600'}`} />
                   )}
                 </div>
               );
@@ -591,13 +655,13 @@ const InitialSetupPage: React.FC = () => {
         </div>
 
         {/* Step Content */}
-        <Card>
+        <Card className="bg-gray-900 border-gray-700">
           <CardHeader>
-            <CardTitle className="flex items-center">
-              {React.createElement(steps[currentStep - 1].icon, { className: "w-5 h-5 mr-2" })}
+            <CardTitle className="flex items-center text-white">
+              {React.createElement(steps[currentStep - 1].icon, { className: "w-5 h-5 mr-2 text-yellow-400" })}
               {steps[currentStep - 1].title}
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-gray-400">
               {currentStep === 1 && "Proporciona la información básica de tu salón"}
               {currentStep === 2 && "Define los servicios que ofreces y sus precios"}
               {currentStep === 3 && "Registra a tus empleados y asigna servicios"}
@@ -615,13 +679,19 @@ const InitialSetupPage: React.FC = () => {
             variant="outline"
             onClick={handlePreviousStep}
             disabled={currentStep === 1}
+            className="border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white"
           >
+            <ArrowLeft className="w-4 h-4 mr-2" />
             Anterior
           </Button>
           
           {currentStep < 4 ? (
-            <Button onClick={handleNextStep}>
+            <Button 
+              onClick={handleNextStep}
+              className="bg-yellow-400 text-black hover:bg-yellow-500"
+            >
               Siguiente
+              <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           ) : (
             <Button 
@@ -629,7 +699,17 @@ const InitialSetupPage: React.FC = () => {
               disabled={isLoading}
               className="bg-green-600 hover:bg-green-700"
             >
-              {isLoading ? 'Completando...' : 'Completar Configuración'}
+              {isLoading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                  Completando...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4 mr-2" />
+                  Completar Configuración
+                </>
+              )}
             </Button>
           )}
         </div>

@@ -7,6 +7,7 @@ import { useToast } from '../../hooks/use-toast';
 import NotificationButton from '../../components/NotificationButton';
 import ReviewModal from '../../components/ReviewModal';
 import BackToHomeButton from '../../components/BackToHomeButton';
+import ClientServiceHistory from '../../components/ClientServiceHistory';
 import { 
   Calendar, 
   Clock, 
@@ -281,70 +282,8 @@ const ClientDashboard: React.FC = () => {
             </div>
           )}
 
-          {activeTab === 'history' && (
-            <div className="space-y-8">
-              <div>
-                <h2 className="text-3xl font-bold text-white mb-2">Historial de Citas</h2>
-                <p className="text-gray-400">Todas tus citas completadas.</p>
-              </div>
-
-              <div className="space-y-4">
-                {completedAppointments.length === 0 ? (
-                  <div className="bg-gray-800 p-8 rounded-xl border border-gray-700 text-center">
-                    <History className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-400">No tienes citas completadas aún.</p>
-                  </div>
-                ) : (
-                  completedAppointments.map((appointment) => (
-                    <div key={appointment.id} className="bg-gray-800 p-6 rounded-xl border border-gray-700">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4">
-                          <div className="w-12 h-12 bg-green-400 rounded-full flex items-center justify-center">
-                            <User className="w-6 h-6 text-black" />
-                          </div>
-                          <div>
-                            <h3 className="text-lg font-semibold text-white">
-                              {appointment.services?.name}
-                            </h3>
-                            <p className="text-gray-400">
-                              con {appointment.employees?.firstName} {appointment.employees?.lastName}
-                            </p>
-                            <div className="flex items-center space-x-4 text-sm text-gray-400">
-                              <div className="flex items-center space-x-1">
-                                <Calendar className="w-4 h-4" />
-                                <span>{formatDate(appointment.date)}</span>
-                              </div>
-                              <div className="flex items-center space-x-1">
-                                <Clock className="w-4 h-4" />
-                                <span>{formatTime(appointment.startTime)} - {formatTime(appointment.endTime)}</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center space-x-2">
-                          <span className="px-3 py-1 rounded-full text-sm font-medium bg-green-900 text-green-200">
-                            Completada
-                          </span>
-                          {appointment.price && (
-                            <span className="text-green-400 font-semibold">
-                              ${appointment.price}
-                            </span>
-                          )}
-                          <button
-                            onClick={() => handleReviewAppointment(appointment)}
-                            className="flex items-center space-x-1 px-3 py-1 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors text-sm"
-                          >
-                            <Star className="w-4 h-4" />
-                            <span>Calificar</span>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
+          {activeTab === 'history' && user && (
+            <ClientServiceHistory clientId={user.id} />
           )}
 
           {activeTab === 'reviews' && (

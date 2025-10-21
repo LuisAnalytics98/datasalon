@@ -18,7 +18,7 @@ export const salonAccountService = {
       const { data: authData, error: authError } = await supabase.auth.admin.createUser({
         email: request.email,
         password: password,
-        email_confirm: true,
+        email_confirm: false, // Use Supabase default email confirmation
         user_metadata: {
           first_name: request.adminName.split(' ')[0],
           last_name: request.adminName.split(' ').slice(1).join(' ') || '',
@@ -59,7 +59,6 @@ export const salonAccountService = {
         salonName: request.salonName,
         adminName: request.adminName,
         email: request.email,
-        password: password,
         loginUrl: `${window.location.origin}/login`
       });
 
@@ -100,7 +99,7 @@ export const salonAccountService = {
       const { data: authData, error: authError } = await supabase.auth.admin.createUser({
         email: employeeData.email,
         password: password,
-        email_confirm: true,
+        email_confirm: false, // Use Supabase default email confirmation
         user_metadata: {
           first_name: employeeData.firstName,
           last_name: employeeData.lastName,
@@ -140,7 +139,6 @@ export const salonAccountService = {
         employeeName: `${employeeData.firstName} ${employeeData.lastName}`,
         salonName: salonData?.name || 'Salón',
         email: employeeData.email,
-        password: password,
         loginUrl: `${window.location.origin}/login`
       });
 

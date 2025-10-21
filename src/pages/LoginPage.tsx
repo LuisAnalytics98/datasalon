@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Eye, EyeOff, Mail, Lock, User, Phone } from 'lucide-react';
@@ -21,6 +21,7 @@ const LoginPage: React.FC = () => {
 
     try {
       await login(email, password);
+      // Navigate to dashboard after successful login
       navigate('/dashboard');
     } catch (err: any) {
       setError(err.message || 'Error al iniciar sesión');
@@ -29,21 +30,42 @@ const LoginPage: React.FC = () => {
     }
   };
 
+
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
-          <div className="flex justify-center mb-4">
-            <BackToHomeButton variant="icon-only" />
+    <div className="min-h-screen bg-black text-white">
+      {/* Navigation */}
+      <nav className="fixed top-0 w-full bg-black/90 backdrop-blur-sm z-50 border-b border-yellow-400/20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center">
+              <h1 className="text-2xl font-bold text-yellow-400">DataSalon</h1>
+            </div>
+            <div className="flex items-center space-x-4">
+              <BackToHomeButton variant="minimal" />
+            </div>
           </div>
-          <h1 className="text-4xl font-bold text-yellow-400 mb-2">DataSalon</h1>
-          <h2 className="text-3xl font-bold text-white">Iniciar Sesión</h2>
-          <p className="mt-2 text-gray-400">
-            Accede a tu cuenta para gestionar tu salón
-          </p>
+        </div>
+      </nav>
+
+      {/* Hero Section */}
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        {/* Background Image */}
+        <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-900 to-black">
+          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1560066984-138dadb4c035?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80')] bg-cover bg-center opacity-20"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/60"></div>
         </div>
 
-        <div className="bg-gray-900 p-8 rounded-2xl border border-gray-700">
+        {/* Content */}
+        <div className="relative z-10 max-w-md w-full space-y-8 px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold text-yellow-400 mb-2">DataSalon</h1>
+            <h2 className="text-3xl font-bold text-white">Iniciar Sesión</h2>
+            <p className="mt-2 text-gray-400">
+              Accede a tu cuenta para gestionar tu salón
+            </p>
+          </div>
+
+          <div className="bg-gray-900/90 backdrop-blur-sm p-8 rounded-2xl border border-gray-700 shadow-2xl">
           <form className="space-y-6" onSubmit={handleSubmit}>
             {error && (
               <div className="bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded-lg">
@@ -119,7 +141,7 @@ const LoginPage: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-yellow-400 to-yellow-600 text-black py-3 px-4 rounded-lg font-semibold hover:from-yellow-500 hover:to-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 focus:ring-offset-gray-900 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              className="w-full bg-gradient-to-r from-yellow-400 to-yellow-600 text-black py-3 px-4 rounded-lg font-semibold hover:from-yellow-500 hover:to-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 focus:ring-offset-gray-900 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg shadow-yellow-400/25"
             >
               {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
             </button>
@@ -136,8 +158,9 @@ const LoginPage: React.FC = () => {
               </Link>
             </p>
           </div>
+          </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 };

@@ -53,15 +53,8 @@ const App: React.FC = () => {
               } 
             />
 
-            {/* Protected Routes */}
-            <Route 
-              path="/dashboard" 
-              element={
-                <ProtectedRoute>
-                  <DashboardPage />
-                </ProtectedRoute>
-              } 
-            />
+            {/* Dashboard Route - Direct authentication */}
+            <Route path="/dashboard" element={<DashboardPage />} />
 
             {/* Admin Routes */}
             <Route 

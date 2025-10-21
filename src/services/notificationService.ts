@@ -5,6 +5,12 @@ import { Appointment, Notification } from '../types';
 export const notificationService = {
   async scheduleAppointmentReminders(): Promise<void> {
     try {
+      // Check if we're in development mode and skip if no real database
+      if (import.meta.env.DEV) {
+        console.log('Development mode: Skipping appointment reminders');
+        return;
+      }
+
       // Get appointments that are 8 hours away
       const now = new Date();
       const eightHoursFromNow = new Date(now.getTime() + 8 * 60 * 60 * 1000);
@@ -28,7 +34,10 @@ export const notificationService = {
         .lte('date', tomorrow)
         .eq('reminder_sent', false); // Only get appointments that haven't had reminders sent
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching appointments for reminders:', error);
+        return;
+      }
 
       if (!appointments || appointments.length === 0) {
         console.log('No appointments need reminders at this time');
@@ -49,7 +58,10 @@ export const notificationService = {
       console.log(`Sent ${appointments.length} appointment reminders`);
     } catch (error) {
       console.error('Error scheduling appointment reminders:', error);
-      throw error;
+      // Don't throw error in development mode
+      if (import.meta.env.PROD) {
+        throw error;
+      }
     }
   },
 

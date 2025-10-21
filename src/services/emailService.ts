@@ -55,7 +55,6 @@ export const emailService = {
     salonName: string;
     adminName: string;
     email: string;
-    password: string;
     loginUrl: string;
   }): Promise<boolean> {
     const template = this.generateSalonCredentialsEmailTemplate(credentials);
@@ -66,7 +65,6 @@ export const emailService = {
     employeeName: string;
     salonName: string;
     email: string;
-    password: string;
     loginUrl: string;
   }): Promise<boolean> {
     const template = this.generateEmployeeCredentialsEmailTemplate(credentials);
@@ -167,12 +165,11 @@ export const emailService = {
     salonName: string;
     adminName: string;
     email: string;
-    password: string;
     loginUrl: string;
   }): EmailTemplate {
     return {
       to: credentials.email,
-      subject: `¡Bienvenido a DataSalon! - Credenciales de acceso para ${credentials.salonName}`,
+      subject: `¡Bienvenido a DataSalon! - Cuenta creada para ${credentials.salonName}`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -204,41 +201,49 @@ export const emailService = {
               <h2>Hola ${credentials.adminName},</h2>
               <p>¡Excelentes noticias! Tu solicitud para <strong>${credentials.salonName}</strong> ha sido aprobada y ya tienes acceso a la plataforma DataSalon.</p>
               
-              <div class="credentials">
-                <h3>🔑 Tus Credenciales de Acceso</h3>
-                <div class="credential-row">
-                  <span class="label">Email:</span> ${credentials.email}
-                </div>
-                <div class="credential-row">
-                  <span class="label">Contraseña:</span>
-                  <div class="password">${credentials.password}</div>
-                </div>
-                <div class="credential-row">
-                  <span class="label">URL de Acceso:</span> <a href="${credentials.loginUrl}">${credentials.loginUrl}</a>
-                </div>
+              <div style="background: #fff3cd; padding: 15px; border-radius: 6px; border: 1px solid #ffeaa7; margin: 20px 0;">
+                <h3>📧 Confirmación de Email Requerida</h3>
+                <p>Hemos enviado un correo de confirmación a <strong>${credentials.email}</strong>. Para activar tu cuenta, necesitas:</p>
+                <ol>
+                  <li>Revisar tu bandeja de entrada (y carpeta de spam)</li>
+                  <li>Hacer clic en el enlace de confirmación del email</li>
+                  <li>Establecer tu contraseña personal</li>
+                  <li>Iniciar sesión en DataSalon</li>
+                </ol>
               </div>
               
-              <p><strong>Próximos pasos:</strong></p>
-              <ol>
-                <li>Inicia sesión con las credenciales proporcionadas</li>
-                <li>Configura los servicios que ofrece tu salón</li>
-                <li>Registra a tus empleados</li>
-                <li>Establece horarios de trabajo</li>
-                <li>¡Comienza a recibir clientes!</li>
-              </ol>
+              <div class="credentials">
+                <h3>🚀 Próximos Pasos</h3>
+                <div style="margin: 15px 0; padding: 10px; background: #f8f9fa; border-radius: 6px;">
+                  <strong>1. Confirma tu email</strong><br>
+                  Revisa tu correo y haz clic en el enlace de confirmación
+                </div>
+                <div style="margin: 15px 0; padding: 10px; background: #f8f9fa; border-radius: 6px;">
+                  <strong>2. Configura tu salón</strong><br>
+                  Completa la información básica de tu salón
+                </div>
+                <div style="margin: 15px 0; padding: 10px; background: #f8f9fa; border-radius: 6px;">
+                  <strong>3. Registra servicios</strong><br>
+                  Agrega los servicios que ofreces y sus precios
+                </div>
+                <div style="margin: 15px 0; padding: 10px; background: #f8f9fa; border-radius: 6px;">
+                  <strong>4. Agrega empleados</strong><br>
+                  Registra a tu equipo y asigna servicios
+                </div>
+                <div style="margin: 15px 0; padding: 10px; background: #f8f9fa; border-radius: 6px;">
+                  <strong>5. ¡Comienza a recibir clientes!</strong><br>
+                  Tu salón estará listo para operar
+                </div>
+              </div>
               
               <div style="text-align: center;">
-                <a href="${credentials.loginUrl}" class="cta-button">Iniciar Sesión Ahora</a>
-              </div>
-              
-              <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 6px; margin: 20px 0;">
-                <strong>⚠️ Importante:</strong> Por seguridad, te recomendamos cambiar tu contraseña después del primer inicio de sesión.
+                <a href="${credentials.loginUrl}" class="cta-button">Ir a DataSalon</a>
               </div>
             </div>
             
             <div class="footer">
               <p>Este es un mensaje automático del sistema DataSalon.</p>
-              <p>Si tienes alguna pregunta, contacta al equipo de soporte.</p>
+              <p>Si no recibes el email de confirmación, revisa tu carpeta de spam o contacta al equipo de soporte.</p>
             </div>
           </div>
         </body>
@@ -251,12 +256,11 @@ export const emailService = {
     employeeName: string;
     salonName: string;
     email: string;
-    password: string;
     loginUrl: string;
   }): EmailTemplate {
     return {
       to: credentials.email,
-      subject: `¡Bienvenido a DataSalon! - Acceso como empleado de ${credentials.salonName}`,
+      subject: `¡Bienvenido a DataSalon! - Cuenta de empleado creada para ${credentials.salonName}`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -288,41 +292,49 @@ export const emailService = {
               <h2>Hola ${credentials.employeeName},</h2>
               <p>¡Bienvenido al equipo de <strong>${credentials.salonName}</strong>! Tu administrador te ha registrado en la plataforma DataSalon.</p>
               
-              <div class="credentials">
-                <h3>🔑 Tus Credenciales de Acceso</h3>
-                <div class="credential-row">
-                  <span class="label">Email:</span> ${credentials.email}
-                </div>
-                <div class="credential-row">
-                  <span class="label">Contraseña:</span>
-                  <div class="password">${credentials.password}</div>
-                </div>
-                <div class="credential-row">
-                  <span class="label">URL de Acceso:</span> <a href="${credentials.loginUrl}">${credentials.loginUrl}</a>
-                </div>
+              <div style="background: #fff3cd; padding: 15px; border-radius: 6px; border: 1px solid #ffeaa7; margin: 20px 0;">
+                <h3>📧 Confirmación de Email Requerida</h3>
+                <p>Hemos enviado un correo de confirmación a <strong>${credentials.email}</strong>. Para activar tu cuenta, necesitas:</p>
+                <ol>
+                  <li>Revisar tu bandeja de entrada (y carpeta de spam)</li>
+                  <li>Hacer clic en el enlace de confirmación del email</li>
+                  <li>Establecer tu contraseña personal</li>
+                  <li>Iniciar sesión en DataSalon</li>
+                </ol>
               </div>
               
-              <p><strong>Con tu cuenta podrás:</strong></p>
-              <ul>
-                <li>Ver tus citas asignadas</li>
-                <li>Confirmar la llegada de clientes</li>
-                <li>Registrar servicios completados</li>
-                <li>Gestionar pagos</li>
-                <li>Ver tu horario de trabajo</li>
-              </ul>
+              <div class="credentials">
+                <h3>🚀 Con tu cuenta podrás:</h3>
+                <div style="margin: 15px 0; padding: 10px; background: #f8f9fa; border-radius: 6px;">
+                  <strong>📅 Ver tus citas asignadas</strong><br>
+                  Revisa tu agenda diaria y las citas programadas
+                </div>
+                <div style="margin: 15px 0; padding: 10px; background: #f8f9fa; border-radius: 6px;">
+                  <strong>✅ Confirmar llegada de clientes</strong><br>
+                  Marca cuando los clientes lleguen a sus citas
+                </div>
+                <div style="margin: 15px 0; padding: 10px; background: #f8f9fa; border-radius: 6px;">
+                  <strong>💼 Registrar servicios completados</strong><br>
+                  Finaliza servicios y registra detalles
+                </div>
+                <div style="margin: 15px 0; padding: 10px; background: #f8f9fa; border-radius: 6px;">
+                  <strong>💳 Gestionar pagos</strong><br>
+                  Procesa pagos de clientes
+                </div>
+                <div style="margin: 15px 0; padding: 10px; background: #f8f9fa; border-radius: 6px;">
+                  <strong>⏰ Ver tu horario de trabajo</strong><br>
+                  Consulta tus horarios asignados
+                </div>
+              </div>
               
               <div style="text-align: center;">
-                <a href="${credentials.loginUrl}" class="cta-button">Iniciar Sesión Ahora</a>
-              </div>
-              
-              <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 6px; margin: 20px 0;">
-                <strong>⚠️ Importante:</strong> Por seguridad, te recomendamos cambiar tu contraseña después del primer inicio de sesión.
+                <a href="${credentials.loginUrl}" class="cta-button">Ir a DataSalon</a>
               </div>
             </div>
             
             <div class="footer">
               <p>Este es un mensaje automático del sistema DataSalon.</p>
-              <p>Si tienes alguna pregunta, contacta a tu administrador.</p>
+              <p>Si no recibes el email de confirmación, revisa tu carpeta de spam o contacta a tu administrador.</p>
             </div>
           </div>
         </body>

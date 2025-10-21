@@ -6,6 +6,7 @@
 # Obtén estos valores desde tu proyecto de Supabase
 VITE_SUPABASE_URL=https://tu-proyecto.supabase.co
 VITE_SUPABASE_ANON_KEY=tu_clave_anonima_aqui
+VITE_SUPABASE_SERVICE_KEY=tu_clave_de_servicio_aqui
 
 # JWT Secret (REQUERIDO)
 # Genera una clave secreta segura para JWT
