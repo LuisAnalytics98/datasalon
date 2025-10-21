@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Eye, EyeOff, Mail, Lock, User, Phone } from 'lucide-react';
+import BackToHomeButton from '../components/BackToHomeButton';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -32,6 +33,9 @@ const LoginPage: React.FC = () => {
     <div className="min-h-screen bg-black flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
+          <div className="flex justify-center mb-4">
+            <BackToHomeButton variant="icon-only" />
+          </div>
           <h1 className="text-4xl font-bold text-yellow-400 mb-2">DataSalon</h1>
           <h2 className="text-3xl font-bold text-white">Iniciar Sesión</h2>
           <p className="mt-2 text-gray-400">

@@ -30,14 +30,36 @@ Una aplicación completa para la gestión de salones de belleza con funcionalida
 - **Routing**: React Router DOM
 - **Estado**: Context API + React Hooks
 
-## 📦 Instalación
+## 📦 Instalación y Ejecución
 
 ### Prerrequisitos
 - Node.js 18+ 
 - npm o yarn
 - Cuenta de Supabase
 
-### Pasos de Instalación
+### 🚀 Inicio Rápido
+
+#### Opción 1: Scripts Automáticos (Recomendado)
+
+**Para Windows:**
+```bash
+# Doble clic en el archivo o ejecutar en terminal:
+start-app.bat
+```
+
+**Para Linux/Mac:**
+```bash
+# Ejecutar en terminal:
+./start-app.sh
+```
+
+Los scripts automáticamente:
+- ✅ Verifican que Node.js esté instalado
+- ✅ Instalan las dependencias si es necesario
+- ✅ Inician el servidor de desarrollo
+- ✅ Abren la aplicación en http://localhost:5173
+
+#### Opción 2: Instalación Manual
 
 1. **Clonar el repositorio**
 ```bash
@@ -86,6 +108,12 @@ yarn dev
 ```
 
 La aplicación estará disponible en `http://localhost:5173`
+
+### 📁 Archivos de Inicio
+
+- `start-app.bat` - Script para Windows
+- `start-app.sh` - Script para Linux/Mac
+- `package.json` - Configuración de npm scripts
 
 ## 🗄️ Base de Datos
 

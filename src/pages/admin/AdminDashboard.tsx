@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { dashboardService, appointmentService, employeeService, serviceService } from '../../services/api';
 import { DashboardStats } from '../../types';
+import AnalyticsDashboard from '../../components/AnalyticsDashboard';
+import BackToHomeButton from '../../components/BackToHomeButton';
 import { 
   Calendar, 
   DollarSign, 
@@ -11,14 +14,17 @@ import {
   Settings,
   LogOut,
   Bell,
-  BarChart3
+  BarChart3,
+  Wrench
 } from 'lucide-react';
 
 const AdminDashboard: React.FC = () => {
+  const navigate = useNavigate();
   const { user, salon, logout } = useAuth();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
+  const [needsSetup, setNeedsSetup] = useState(false);
 
   useEffect(() => {
     const loadDashboardData = async () => {
@@ -28,8 +34,18 @@ const AdminDashboard: React.FC = () => {
         const today = new Date().toISOString().split('T')[0];
         const dashboardStats = await dashboardService.getStats(salon.id, today);
         setStats(dashboardStats);
+        
+        // Check if salon needs initial setup
+        const services = await serviceService.getServices(salon.id);
+        const employees = await employeeService.getEmployees(salon.id);
+        
+        if (services.length === 0 || employees.length === 0) {
+          setNeedsSetup(true);
+        }
       } catch (error) {
         console.error('Error loading dashboard data:', error);
+        // If there's an error, assume setup is needed
+        setNeedsSetup(true);
       } finally {
         setLoading(false);
       }
@@ -69,6 +85,7 @@ const AdminDashboard: React.FC = () => {
             </div>
             
             <div className="flex items-center space-x-4">
+              <BackToHomeButton variant="minimal" />
               <button className="p-2 text-gray-400 hover:text-yellow-400 transition-colors">
                 <Bell className="w-6 h-6" />
               </button>
@@ -121,12 +138,8 @@ const AdminDashboard: React.FC = () => {
               </button>
               
               <button
-                onClick={() => setActiveTab('employees')}
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                  activeTab === 'employees' 
-                    ? 'bg-yellow-400 text-black' 
-                    : 'text-gray-300 hover:bg-gray-800 hover:text-white'
-                }`}
+                onClick={() => navigate('/admin/employees')}
+                className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors text-gray-300 hover:bg-gray-800 hover:text-white"
               >
                 <Users className="w-5 h-5" />
                 <span>Empleados</span>
@@ -143,12 +156,53 @@ const AdminDashboard: React.FC = () => {
                 <Settings className="w-5 h-5" />
                 <span>Servicios</span>
               </button>
+              
+              <button
+                onClick={() => setActiveTab('analytics')}
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+                  activeTab === 'analytics' 
+                    ? 'bg-yellow-400 text-black' 
+                    : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                }`}
+              >
+                <BarChart3 className="w-5 h-5" />
+                <span>Métricas</span>
+              </button>
+              
+              <button
+                onClick={() => navigate('/admin/setup')}
+                className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors text-gray-300 hover:bg-gray-800 hover:text-white"
+              >
+                <Wrench className="w-5 h-5" />
+                <span>Configuración</span>
+              </button>
             </div>
           </nav>
         </aside>
 
         {/* Main Content */}
         <main className="flex-1 p-8">
+          {/* Setup Banner */}
+          {needsSetup && (
+            <div className="mb-8 bg-gradient-to-r from-yellow-500 to-orange-500 p-6 rounded-xl border border-yellow-400">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <Wrench className="w-8 h-8 text-white" />
+                  <div>
+                    <h3 className="text-xl font-bold text-white">¡Configuración Inicial Requerida!</h3>
+                    <p className="text-yellow-100">Completa la configuración de tu salón para comenzar a recibir clientes.</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => navigate('/admin/setup')}
+                  className="bg-white text-yellow-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
+                >
+                  Configurar Ahora
+                </button>
+              </div>
+            </div>
+          )}
+
           {activeTab === 'overview' && (
             <div className="space-y-8">
               <div>
@@ -264,6 +318,12 @@ const AdminDashboard: React.FC = () => {
               <div className="bg-gray-800 p-6 rounded-xl border border-gray-700">
                 <p className="text-gray-400">Funcionalidad de gestión de servicios en desarrollo...</p>
               </div>
+            </div>
+          )}
+
+          {activeTab === 'analytics' && salon && (
+            <div className="bg-white rounded-xl p-6">
+              <AnalyticsDashboard salonId={salon.id} />
             </div>
           )}
         </main>

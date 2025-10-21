@@ -120,7 +120,7 @@ const LandingPage: React.FC = () => {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Link 
-                to="/register" 
+                to="/salon-request" 
                 className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-black px-8 py-4 rounded-xl font-bold text-lg hover:from-yellow-500 hover:to-yellow-700 transition-all duration-300 transform hover:scale-105 shadow-2xl shadow-yellow-400/25"
               >
                 Comenzar Ahora
@@ -128,7 +128,7 @@ const LandingPage: React.FC = () => {
               </Link>
               
               <Link 
-                to="/login" 
+                to="/salons" 
                 className="border-2 border-yellow-400 text-yellow-400 px-8 py-4 rounded-xl font-bold text-lg hover:bg-yellow-400 hover:text-black transition-all duration-300"
               >
                 Ver Demo
@@ -241,7 +241,7 @@ const LandingPage: React.FC = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link 
-              to="/register" 
+              to="/salon-request" 
               className="bg-black text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-800 transition-all duration-300 transform hover:scale-105"
             >
               Comenzar Gratis

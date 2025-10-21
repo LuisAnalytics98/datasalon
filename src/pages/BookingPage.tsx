@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { serviceService, employeeService, appointmentService } from '../services/api';
-import { Service, Employee, BookingData } from '../types';
+import { Service, Employee, BookingData, Salon } from '../types';
+import { useToast } from '../hooks/use-toast';
 import { 
   Calendar, 
   Clock, 
@@ -13,7 +15,10 @@ import {
 } from 'lucide-react';
 
 const BookingPage: React.FC = () => {
-  const { user, salon } = useAuth();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [selectedSalon, setSelectedSalon] = useState<Salon | null>(null);
   const [step, setStep] = useState(1);
   const [services, setServices] = useState<Service[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -32,26 +37,42 @@ const BookingPage: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
 
   useEffect(() => {
+    // Load selected salon from localStorage
+    const storedSalon = localStorage.getItem('selectedSalon');
+    if (storedSalon) {
+      setSelectedSalon(JSON.parse(storedSalon));
+    } else {
+      // If no salon selected, redirect to salon selection
+      navigate('/salons');
+    }
+  }, [navigate]);
+
+  useEffect(() => {
     const loadServices = async () => {
-      if (!salon) return;
+      if (!selectedSalon) return;
       
       try {
-        const servicesData = await serviceService.getServices(salon.id);
+        const servicesData = await serviceService.getServices(selectedSalon.id);
         setServices(servicesData);
       } catch (error) {
         console.error('Error loading services:', error);
+        toast({
+          title: "Error",
+          description: "No se pudieron cargar los servicios",
+          variant: "destructive",
+        });
       }
     };
 
     loadServices();
-  }, [salon]);
+  }, [selectedSalon, toast]);
 
   useEffect(() => {
     const loadEmployees = async () => {
-      if (!salon || !bookingData.serviceId) return;
+      if (!selectedSalon || !bookingData.serviceId) return;
       
       try {
-        const employeesData = await employeeService.getEmployees(salon.id);
+        const employeesData = await employeeService.getEmployees(selectedSalon.id);
         // Filter employees who provide the selected service
         const filteredEmployees = employeesData.filter(emp => 
           emp.services.includes(bookingData.serviceId)
@@ -59,11 +80,16 @@ const BookingPage: React.FC = () => {
         setEmployees(filteredEmployees);
       } catch (error) {
         console.error('Error loading employees:', error);
+        toast({
+          title: "Error",
+          description: "No se pudieron cargar los empleados",
+          variant: "destructive",
+        });
       }
     };
 
     loadEmployees();
-  }, [salon, bookingData.serviceId]);
+  }, [selectedSalon, bookingData.serviceId, toast]);
 
   useEffect(() => {
     const loadAvailableSlots = async () => {
@@ -107,7 +133,7 @@ const BookingPage: React.FC = () => {
   };
 
   const handleBookingSubmit = async () => {
-    if (!user || !salon) return;
+    if (!user || !selectedSalon) return;
     
     try {
       setLoading(true);
@@ -120,7 +146,7 @@ const BookingPage: React.FC = () => {
       const endTime = new Date(startTime.getTime() + selectedService.duration * 60000);
       
       await appointmentService.createAppointment({
-        salonId: salon.id,
+        salonId: selectedSalon.id,
         clientId: user.id,
         employeeId: bookingData.employeeId,
         serviceId: bookingData.serviceId,
@@ -131,9 +157,19 @@ const BookingPage: React.FC = () => {
         notes: bookingData.notes
       });
       
+      toast({
+        title: "¡Cita reservada!",
+        description: "Tu cita ha sido reservada exitosamente",
+      });
+      
       setStep(5); // Success step
     } catch (error: any) {
       setError(error.message || 'Error al crear la cita');
+      toast({
+        title: "Error",
+        description: error.message || 'Error al crear la cita',
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -171,7 +207,16 @@ const BookingPage: React.FC = () => {
             <div className="flex items-center">
               <h1 className="text-2xl font-bold text-yellow-400">DataSalon</h1>
               <span className="ml-4 text-gray-400">Reservar Cita</span>
+              {selectedSalon && (
+                <span className="ml-4 text-gray-300">• {selectedSalon.name}</span>
+              )}
             </div>
+            <button
+              onClick={() => navigate('/salons')}
+              className="text-gray-400 hover:text-white transition-colors"
+            >
+              Cambiar Salón
+            </button>
           </div>
         </div>
       </header>

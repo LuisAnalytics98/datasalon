@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { appointmentService } from '../../services/api';
-import { Appointment } from '../../types';
+import { appointmentService, paymentService, employeeService } from '../../services/api';
+import { Appointment, Payment } from '../../types';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
+import { Label } from '../../components/ui/label';
+import { Badge } from '../../components/ui/badge';
+import { useToast } from '../../hooks/use-toast';
+import PaymentModal from '../../components/PaymentModal';
+import BackToHomeButton from '../../components/BackToHomeButton';
 import { 
   Calendar, 
   Clock, 
@@ -10,32 +18,78 @@ import {
   User,
   LogOut,
   Bell,
-  Settings
+  Settings,
+  DollarSign,
+  CreditCard,
+  Banknote,
+  Smartphone,
+  Star,
+  TrendingUp,
+  AlertCircle
 } from 'lucide-react';
 
 const EmployeeDashboard: React.FC = () => {
   const { user, salon, logout } = useAuth();
+  const { toast } = useToast();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('today');
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [employeeStats, setEmployeeStats] = useState({
+    todayAppointments: 0,
+    completedToday: 0,
+    totalEarnings: 0,
+    averageRating: 0
+  });
 
   useEffect(() => {
-    const loadAppointments = async () => {
+    const loadData = async () => {
       if (!user || !salon) return;
       
       try {
         const today = new Date().toISOString().split('T')[0];
-        const employeeAppointments = await appointmentService.getAppointments(salon.id, today);
-        setAppointments(employeeAppointments.filter(apt => apt.employeeId === user.id));
+        
+        // Load appointments
+        const allAppointments = await appointmentService.getAppointments(salon.id, today);
+        const employeeAppointments = allAppointments.filter(apt => apt.employeeId === user.id);
+        setAppointments(employeeAppointments);
+        
+        // Load payments for completed appointments
+        const completedAppointments = employeeAppointments.filter(apt => apt.status === 'completed');
+        const paymentsData = await Promise.all(
+          completedAppointments.map(apt => paymentService.getPayments(apt.id))
+        );
+        setPayments(paymentsData.flat());
+        
+        // Calculate stats
+        const completedToday = employeeAppointments.filter(apt => apt.status === 'completed').length;
+        const totalEarnings = paymentsData.flat()
+          .filter(p => p.status === 'completed')
+          .reduce((sum, p) => sum + p.amount, 0);
+        
+        setEmployeeStats({
+          todayAppointments: employeeAppointments.length,
+          completedToday,
+          totalEarnings,
+          averageRating: 4.5 // This would come from reviews
+        });
+        
       } catch (error) {
-        console.error('Error loading appointments:', error);
+        console.error('Error loading data:', error);
+        toast({
+          title: "Error",
+          description: "No se pudieron cargar los datos",
+          variant: "destructive",
+        });
       } finally {
         setLoading(false);
       }
     };
 
-    loadAppointments();
-  }, [user, salon]);
+    loadData();
+  }, [user, salon, toast]);
 
   const handleLogout = async () => {
     try {
@@ -53,8 +107,58 @@ const EmployeeDashboard: React.FC = () => {
           apt.id === appointmentId ? { ...apt, status } : apt
         )
       );
+      
+      toast({
+        title: "Estado actualizado",
+        description: `La cita ha sido marcada como ${status === 'in_progress' ? 'en progreso' : 'completada'}`,
+      });
     } catch (error) {
       console.error('Error updating appointment:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo actualizar el estado de la cita",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleCompleteService = (appointment: Appointment) => {
+    setSelectedAppointment(appointment);
+    setShowPaymentModal(true);
+  };
+
+  const handlePaymentComplete = async (payment: any) => {
+    if (!selectedAppointment) return;
+
+    try {
+      // Update appointment status
+      await appointmentService.updateAppointment(selectedAppointment.id, {
+        status: 'completed',
+        price: payment.amount
+      });
+
+      // Update local state
+      setAppointments(prev => 
+        prev.map(apt => 
+          apt.id === selectedAppointment.id 
+            ? { ...apt, status: 'completed', price: payment.amount }
+            : apt
+        )
+      );
+
+      setShowPaymentModal(false);
+      setSelectedAppointment(null);
+
+      // Reload data
+      loadData();
+
+    } catch (error) {
+      console.error('Error updating appointment:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo actualizar la cita",
+        variant: "destructive",
+      });
     }
   };
 
@@ -88,6 +192,7 @@ const EmployeeDashboard: React.FC = () => {
             </div>
             
             <div className="flex items-center space-x-4">
+              <BackToHomeButton variant="minimal" />
               <button className="p-2 text-gray-400 hover:text-yellow-400 transition-colors">
                 <Bell className="w-6 h-6" />
               </button>
@@ -159,8 +264,63 @@ const EmployeeDashboard: React.FC = () => {
           {activeTab === 'today' && (
             <div className="space-y-8">
               <div>
-                <h2 className="text-3xl font-bold text-white mb-2">Citas de Hoy</h2>
-                <p className="text-gray-400">Gestiona tus citas del día de hoy.</p>
+                <h2 className="text-3xl font-bold text-white mb-2">Dashboard</h2>
+                <p className="text-gray-400">Bienvenido, {user?.firstName}. Aquí tienes un resumen de tu día.</p>
+              </div>
+
+              {/* Stats Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <Card className="bg-gray-800 border-gray-700">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-gray-400 text-sm">Citas Hoy</p>
+                        <p className="text-3xl font-bold text-white">{employeeStats.todayAppointments}</p>
+                      </div>
+                      <Calendar className="w-8 h-8 text-yellow-400" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-gray-800 border-gray-700">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-gray-400 text-sm">Completadas</p>
+                        <p className="text-3xl font-bold text-white">{employeeStats.completedToday}</p>
+                      </div>
+                      <CheckCircle className="w-8 h-8 text-green-400" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-gray-800 border-gray-700">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-gray-400 text-sm">Ingresos Hoy</p>
+                        <p className="text-3xl font-bold text-white">₡{employeeStats.totalEarnings.toLocaleString()}</p>
+                      </div>
+                      <DollarSign className="w-8 h-8 text-green-400" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-gray-800 border-gray-700">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-gray-400 text-sm">Calificación</p>
+                        <p className="text-3xl font-bold text-white">{employeeStats.averageRating}</p>
+                      </div>
+                      <Star className="w-8 h-8 text-yellow-400" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div>
+                <h3 className="text-2xl font-bold text-white mb-4">Citas de Hoy</h3>
               </div>
 
               {/* Appointments List */}
@@ -226,11 +386,11 @@ const EmployeeDashboard: React.FC = () => {
                         
                         {appointment.status === 'in_progress' && (
                           <button
-                            onClick={() => updateAppointmentStatus(appointment.id, 'completed')}
+                            onClick={() => handleCompleteService(appointment)}
                             className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                           >
                             <CheckCircle className="w-4 h-4" />
-                            <span>Completar Servicio</span>
+                            <span>Completar y Cobrar</span>
                           </button>
                         )}
                         
@@ -283,6 +443,14 @@ const EmployeeDashboard: React.FC = () => {
           )}
         </main>
       </div>
+
+      {/* Payment Modal */}
+      <PaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        appointment={selectedAppointment}
+        onPaymentComplete={handlePaymentComplete}
+      />
     </div>
   );
 };

@@ -1,7 +1,7 @@
 export interface User {
   id: string;
   email: string;
-  role: 'admin' | 'employee' | 'client';
+  role: 'owner' | 'admin' | 'employee' | 'client';
   firstName: string;
   lastName: string;
   phone?: string;
@@ -140,4 +140,22 @@ export interface DashboardStats {
     serviceName: string;
     count: number;
   }>;
+}
+
+export interface SalonRequest {
+  id: string;
+  adminName: string;
+  salonName: string;
+  email: string;
+  phone: string;
+  status: 'pending' | 'approved' | 'rejected';
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SalonRequestData {
+  adminName: string;
+  salonName: string;
+  email: string;
+  phone: string;
 }

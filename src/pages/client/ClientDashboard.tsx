@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { appointmentService, reviewService } from '../../services/api';
 import { Appointment, Review } from '../../types';
+import { useToast } from '../../hooks/use-toast';
+import NotificationButton from '../../components/NotificationButton';
+import ReviewModal from '../../components/ReviewModal';
+import BackToHomeButton from '../../components/BackToHomeButton';
 import { 
   Calendar, 
   Clock, 
@@ -15,11 +20,15 @@ import {
 } from 'lucide-react';
 
 const ClientDashboard: React.FC = () => {
+  const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { toast } = useToast();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('upcoming');
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
 
   useEffect(() => {
     const loadClientData = async () => {
@@ -35,13 +44,18 @@ const ClientDashboard: React.FC = () => {
         setReviews(clientReviews);
       } catch (error) {
         console.error('Error loading client data:', error);
+        toast({
+          title: "Error",
+          description: "No se pudieron cargar los datos",
+          variant: "destructive",
+        });
       } finally {
         setLoading(false);
       }
     };
 
     loadClientData();
-  }, [user]);
+  }, [user, toast]);
 
   const handleLogout = async () => {
     try {
@@ -49,6 +63,17 @@ const ClientDashboard: React.FC = () => {
     } catch (error) {
       console.error('Error logging out:', error);
     }
+  };
+
+  const handleReviewAppointment = (appointment: Appointment) => {
+    setSelectedAppointment(appointment);
+    setShowReviewModal(true);
+  };
+
+  const handleReviewSubmit = (review: Review) => {
+    setReviews(prev => [review, ...prev]);
+    setShowReviewModal(false);
+    setSelectedAppointment(null);
   };
 
   const formatDate = (date: string) => {
@@ -97,9 +122,8 @@ const ClientDashboard: React.FC = () => {
             </div>
             
             <div className="flex items-center space-x-4">
-              <button className="p-2 text-gray-400 hover:text-yellow-400 transition-colors">
-                <Bell className="w-6 h-6" />
-              </button>
+              <BackToHomeButton variant="minimal" />
+              <NotificationButton userId={user?.id || ''} />
               <div className="flex items-center space-x-2">
                 <div className="w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center">
                   <span className="text-black font-bold text-sm">
@@ -184,7 +208,10 @@ const ClientDashboard: React.FC = () => {
                   <h2 className="text-3xl font-bold text-white mb-2">Próximas Citas</h2>
                   <p className="text-gray-400">Tus citas programadas y confirmadas.</p>
                 </div>
-                <button className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black rounded-lg font-semibold hover:from-yellow-500 hover:to-yellow-700 transition-all duration-300 transform hover:scale-105">
+                <button 
+                  onClick={() => navigate('/salons')}
+                  className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black rounded-lg font-semibold hover:from-yellow-500 hover:to-yellow-700 transition-all duration-300 transform hover:scale-105"
+                >
                   <Plus className="w-5 h-5" />
                   <span>Nueva Cita</span>
                 </button>
@@ -196,7 +223,10 @@ const ClientDashboard: React.FC = () => {
                   <div className="bg-gray-800 p-8 rounded-xl border border-gray-700 text-center">
                     <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                     <p className="text-gray-400">No tienes citas próximas programadas.</p>
-                    <button className="mt-4 px-6 py-2 bg-yellow-400 text-black rounded-lg font-semibold hover:bg-yellow-500 transition-colors">
+                    <button 
+                      onClick={() => navigate('/salons')}
+                      className="mt-4 px-6 py-2 bg-yellow-400 text-black rounded-lg font-semibold hover:bg-yellow-500 transition-colors"
+                    >
                       Reservar Nueva Cita
                     </button>
                   </div>
@@ -301,6 +331,13 @@ const ClientDashboard: React.FC = () => {
                               ${appointment.price}
                             </span>
                           )}
+                          <button
+                            onClick={() => handleReviewAppointment(appointment)}
+                            className="flex items-center space-x-1 px-3 py-1 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors text-sm"
+                          >
+                            <Star className="w-4 h-4" />
+                            <span>Calificar</span>
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -311,10 +348,65 @@ const ClientDashboard: React.FC = () => {
           )}
 
           {activeTab === 'reviews' && (
-            <div>
-              <h2 className="text-3xl font-bold text-white mb-6">Mis Reviews</h2>
-              <div className="bg-gray-800 p-6 rounded-xl border border-gray-700">
-                <p className="text-gray-400">Funcionalidad de reviews en desarrollo...</p>
+            <div className="space-y-8">
+              <div>
+                <h2 className="text-3xl font-bold text-white mb-2">Mis Reseñas</h2>
+                <p className="text-gray-400">Tus calificaciones y comentarios sobre los servicios.</p>
+              </div>
+
+              <div className="space-y-4">
+                {reviews.length === 0 ? (
+                  <div className="bg-gray-800 p-8 rounded-xl border border-gray-700 text-center">
+                    <Star className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-400 mb-4">No has calificado ningún servicio aún.</p>
+                    <p className="text-gray-500 text-sm">
+                      Después de completar una cita, podrás calificar tu experiencia.
+                    </p>
+                  </div>
+                ) : (
+                  reviews.map((review) => (
+                    <div key={review.id} className="bg-gray-800 p-6 rounded-xl border border-gray-700">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-3 mb-3">
+                            <div className="flex items-center">
+                              {[...Array(5)].map((_, i) => (
+                                <Star
+                                  key={i}
+                                  className={`w-5 h-5 ${
+                                    i < review.rating
+                                      ? 'text-yellow-400 fill-current'
+                                      : 'text-gray-600'
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                            <span className="text-gray-400 text-sm">
+                              {new Date(review.createdAt).toLocaleDateString('es-ES')}
+                            </span>
+                          </div>
+                          
+                          {review.comment && (
+                            <p className="text-gray-300 mb-3">{review.comment}</p>
+                          )}
+                          
+                          {review.preferences && review.preferences.length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                              {review.preferences.map((pref, index) => (
+                                <span
+                                  key={index}
+                                  className="px-2 py-1 bg-yellow-600 text-black text-xs rounded-full"
+                                >
+                                  {pref}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           )}
@@ -342,6 +434,14 @@ const ClientDashboard: React.FC = () => {
           )}
         </main>
       </div>
+
+      {/* Review Modal */}
+      <ReviewModal
+        isOpen={showReviewModal}
+        onClose={() => setShowReviewModal(false)}
+        appointment={selectedAppointment}
+        onReviewSubmit={handleReviewSubmit}
+      />
     </div>
   );
 };
