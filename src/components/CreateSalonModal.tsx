@@ -44,7 +44,9 @@ const CreateSalonModal: React.FC<CreateSalonModalProps> = ({ isOpen, onClose, on
     setIsSubmitting(true);
 
     try {
-      const service = import.meta.env.DEV ? ownerServiceMock : ownerService;
+      // Force production mode - use real Supabase data
+      const useProductionData = import.meta.env.VITE_USE_PRODUCTION_DATA?.trim() === 'true' || import.meta.env.PROD;
+      const service = useProductionData ? ownerService : ownerServiceMock;
       await service.createSalon({
         name: formData.name,
         address: formData.address,

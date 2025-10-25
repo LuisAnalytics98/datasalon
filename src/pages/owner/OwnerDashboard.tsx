@@ -48,8 +48,16 @@ const OwnerDashboard: React.FC = () => {
     try {
       setLoading(true);
       
-      // Use mock service in development mode
-      const service = import.meta.env.DEV ? ownerServiceMock : ownerService;
+      // Force production mode - use real Supabase data
+      const useProductionData = import.meta.env.VITE_USE_PRODUCTION_DATA?.trim() === 'true' || import.meta.env.PROD;
+      console.log('Environment check:', {
+        VITE_USE_PRODUCTION_DATA: import.meta.env.VITE_USE_PRODUCTION_DATA,
+        PROD: import.meta.env.PROD,
+        DEV: import.meta.env.DEV,
+        useProductionData
+      });
+      const service = useProductionData ? ownerService : ownerServiceMock;
+      console.log('Using service:', useProductionData ? 'ownerService (production)' : 'ownerServiceMock (mock)');
       
       const [requestsData, salonsData] = await Promise.all([
         service.getSalonRequests(),
@@ -74,7 +82,8 @@ const OwnerDashboard: React.FC = () => {
       const request = requests.find(r => r.id === requestId);
       if (!request) return;
 
-      const service = import.meta.env.DEV ? ownerServiceMock : ownerService;
+      const useProductionData = import.meta.env.VITE_USE_PRODUCTION_DATA?.trim() === 'true' || import.meta.env.PROD;
+      const service = useProductionData ? ownerService : ownerServiceMock;
       await service.approveSalonRequest(request);
       toast({
         title: "Solicitud aprobada",
@@ -93,7 +102,8 @@ const OwnerDashboard: React.FC = () => {
 
   const handleRejectRequest = async (requestId: string) => {
     try {
-      const service = import.meta.env.DEV ? ownerServiceMock : ownerService;
+      const useProductionData = import.meta.env.VITE_USE_PRODUCTION_DATA?.trim() === 'true' || import.meta.env.PROD;
+      const service = useProductionData ? ownerService : ownerServiceMock;
       await service.rejectSalonRequest(requestId);
       toast({
         title: "Solicitud rechazada",

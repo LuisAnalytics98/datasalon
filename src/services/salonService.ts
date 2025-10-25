@@ -4,8 +4,8 @@ import { mockSalonService } from './mockSalonService';
 export const salonService = {
   async getSalons() {
     try {
-      // In development mode, use mock data
-      if (import.meta.env.DEV) {
+      // Force production mode - use real Supabase data
+      if (import.meta.env.DEV && !import.meta.env.VITE_USE_PRODUCTION_DATA) {
         console.log('Development mode: Using mock salon data');
         return await mockSalonService.getSalons();
       }
@@ -33,8 +33,8 @@ export const salonService = {
 
   async getSalonById(id: string) {
     try {
-      // In development mode, use mock data
-      if (import.meta.env.DEV) {
+      // Force production mode - use real Supabase data
+      if (import.meta.env.DEV && !import.meta.env.VITE_USE_PRODUCTION_DATA) {
         return await mockSalonService.getSalonById(id);
       }
 
@@ -62,8 +62,8 @@ export const salonService = {
 
   async getSalonServices(salonId: string) {
     try {
-      // In development mode, use mock data
-      if (import.meta.env.DEV) {
+      // Force production mode - use real Supabase data
+      if (import.meta.env.DEV && !import.meta.env.VITE_USE_PRODUCTION_DATA) {
         return await mockSalonService.getSalonServices(salonId);
       }
 
@@ -91,8 +91,8 @@ export const salonService = {
 
   async getSalonEmployees(salonId: string) {
     try {
-      // In development mode, use mock data
-      if (import.meta.env.DEV) {
+      // Force production mode - use real Supabase data
+      if (import.meta.env.DEV && !import.meta.env.VITE_USE_PRODUCTION_DATA) {
         return await mockSalonService.getSalonEmployees(salonId);
       }
 
@@ -125,8 +125,8 @@ export const salonService = {
 
   async updateSalon(salonId: string, updates: any) {
     try {
-      // In development mode, just log the update
-      if (import.meta.env.DEV) {
+      // Force production mode - use real Supabase data
+      if (import.meta.env.DEV && !import.meta.env.VITE_USE_PRODUCTION_DATA) {
         console.log('Development mode: Mock salon update', { salonId, updates });
         return { id: salonId, ...updates };
       }
