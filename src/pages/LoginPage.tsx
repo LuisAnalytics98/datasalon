@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Eye, EyeOff, Mail, Lock, User, Phone } from 'lucide-react';
 import BackToHomeButton from '../components/BackToHomeButton';
+import { supabase } from '../config/supabase';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -10,6 +11,7 @@ const LoginPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [resetInfo, setResetInfo] = useState('');
   
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -27,6 +29,26 @@ const LoginPage: React.FC = () => {
       setError(err.message || 'Error al iniciar sesión');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    setError('');
+    setResetInfo('');
+    if (!email) {
+      setError('Ingresa tu correo para enviar el enlace de restablecimiento');
+      return;
+    }
+    try {
+      const appUrl = import.meta.env.VITE_APP_URL || window.location.origin;
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${appUrl}/auth/callback`
+      });
+      if (error) throw error;
+      setResetInfo('Te enviamos un enlace para restablecer tu contraseña. Revisa tu correo (y spam).');
+    } catch (err: any) {
+      setError(err.message || 'No pudimos enviar el enlace. Intenta de nuevo.');
     }
   };
 
@@ -67,9 +89,14 @@ const LoginPage: React.FC = () => {
 
           <div className="bg-gray-900/90 backdrop-blur-sm p-8 rounded-2xl border border-gray-700 shadow-2xl">
           <form className="space-y-6" onSubmit={handleSubmit}>
-            {error && (
+            {(error || resetInfo) && (
               <div className="bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded-lg">
-                {error}
+                {error || ''}
+              </div>
+            )}
+            {resetInfo && !error && (
+              <div className="bg-emerald-900/40 border border-emerald-500 text-emerald-100 px-4 py-3 rounded-lg">
+                {resetInfo}
               </div>
             )}
 
@@ -132,9 +159,9 @@ const LoginPage: React.FC = () => {
               </div>
 
               <div className="text-sm">
-                <a href="#" className="text-yellow-400 hover:text-yellow-300 transition-colors">
+                <button onClick={handleForgotPassword} className="text-yellow-400 hover:text-yellow-300 transition-colors">
                   ¿Olvidaste tu contraseña?
-                </a>
+                </button>
               </div>
             </div>
 
