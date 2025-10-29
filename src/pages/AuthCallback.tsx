@@ -40,7 +40,9 @@ const AuthCallback: React.FC = () => {
       if (error) throw error;
       await supabase.auth.signOut();
       setSuccess(true);
-      setTimeout(() => navigate('/login'), 1200);
+      const appUrl = import.meta.env.VITE_APP_URL || window.location.origin;
+      // Force a full navigation to clear any stale session state
+      window.location.replace(`${appUrl}/login`);
     } catch (err: any) {
       setError(err?.message || 'Error actualizando la contraseña');
     } finally {
