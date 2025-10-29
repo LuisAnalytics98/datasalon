@@ -228,6 +228,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (error) throw error;
       setUser(null);
       setSalon(null);
+      const appUrl = import.meta.env.VITE_APP_URL || window.location.origin;
+      // Hard redirect to avoid any stale SPA state
+      window.location.replace(`${appUrl}/login`);
     } finally {
       setLoading(false);
     }
