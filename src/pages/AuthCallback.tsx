@@ -8,6 +8,7 @@ const AuthCallback: React.FC = () => {
   const [ready, setReady] = useState(false);
   const [hasToken, setHasToken] = useState(false);
   const [flowType, setFlowType] = useState<string | null>(null);
+  const [sessionAvailable, setSessionAvailable] = useState(false);
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [saving, setSaving] = useState(false);
@@ -20,7 +21,15 @@ const AuthCallback: React.FC = () => {
     const type = params.get('type');
     setHasToken(!!token);
     setFlowType(type);
-    setReady(true);
+    // Check that Supabase recognized the session from the link
+    (async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        setSessionAvailable(!!data.session);
+      } finally {
+        setReady(true);
+      }
+    })();
   }, []);
 
   const handleSubmit: React.FormEventHandler<HTMLFormElement> = async (e) => {
@@ -38,11 +47,10 @@ const AuthCallback: React.FC = () => {
       setError(null);
       const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
-      await supabase.auth.signOut();
       setSuccess(true);
       const appUrl = import.meta.env.VITE_APP_URL || window.location.origin;
-      // Force a full navigation to clear any stale session state
-      window.location.replace(`${appUrl}/login`);
+      // Keep the session and go straight to the app
+      window.location.replace(`${appUrl}/dashboard`);
     } catch (err: any) {
       setError(err?.message || 'Error actualizando la contraseña');
     } finally {
@@ -51,7 +59,7 @@ const AuthCallback: React.FC = () => {
   };
 
   if (!ready) return null;
-  if (!hasToken) {
+  if (!hasToken || !sessionAvailable) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center px-4">
         <div className="max-w-md w-full bg-gray-900/90 border border-gray-700 rounded-2xl p-8 text-center">
