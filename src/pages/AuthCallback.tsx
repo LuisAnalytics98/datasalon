@@ -38,6 +38,8 @@ const AuthCallback: React.FC = () => {
       setError(null);
       const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
+      // Sign out to require explicit login with the new password
+      await supabase.auth.signOut();
       setSuccess(true);
       setTimeout(() => navigate('/login'), 1200);
     } catch (err: any) {

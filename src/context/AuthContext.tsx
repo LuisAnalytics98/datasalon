@@ -199,10 +199,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const register = async (registerData: RegisterData) => {
     setLoading(true);
     try {
+      const appUrl = import.meta.env.VITE_APP_URL || window.location.origin;
       const { data, error } = await supabase.auth.signUp({
         email: registerData.email,
         password: registerData.password,
         options: {
+          emailRedirectTo: `${appUrl}/auth/callback`,
           data: {
             first_name: registerData.firstName,
             last_name: registerData.lastName,
