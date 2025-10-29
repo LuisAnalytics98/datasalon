@@ -25,6 +25,7 @@ import EmployeeDashboard from './pages/employee/EmployeeDashboard';
 
 // Client Pages
 import ClientDashboard from './pages/client/ClientDashboard';
+import AuthCallback from './pages/AuthCallback';
 
 const App: React.FC = () => {
   return (
@@ -55,6 +56,9 @@ const App: React.FC = () => {
 
             {/* Dashboard Route - Direct authentication */}
             <Route path="/dashboard" element={<DashboardPage />} />
+
+            {/* Auth Callback (public) */}
+            <Route path="/auth/callback" element={<AuthCallback />} />
 
             {/* Admin Routes */}
             <Route 
