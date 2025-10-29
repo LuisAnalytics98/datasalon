@@ -2,6 +2,7 @@ import { supabase } from '../config/supabase';
 import { supabaseAdmin } from '../config/supabase-admin';
 import { Salon, SalonRequest } from '../types';
 import { emailService } from './emailService';
+import { realEmailService } from './realEmailService';
 
 export const ownerService = {
   // Create a new salon directly (without request)
@@ -30,7 +31,7 @@ export const ownerService = {
       const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
         email: salonData.adminEmail,
         password: password,
-        email_confirm: true, // Use Supabase's built-in email confirmation
+        email_confirm: false, // Do NOT auto-confirm; we will send invite/reset
         user_metadata: {
           first_name: salonData.adminName.split(' ')[0],
           last_name: salonData.adminName.split(' ').slice(1).join(' ') || '',
@@ -57,10 +58,29 @@ export const ownerService = {
       } else {
         console.log('Admin user created successfully:', authData.user.id);
         adminUserId = authData.user.id;
-        
-        // Supabase automatically sends confirmation email when email_confirm: true
-        console.log('📧 Supabase will automatically send confirmation email to:', salonData.adminEmail);
-        console.log('📧 Admin should check their email for the confirmation link');
+
+        // Send an invitation email with redirect to /auth/callback
+        const appUrl = (import.meta as any).env?.VITE_APP_URL || window.location.origin;
+        try {
+          const { error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(salonData.adminEmail, {
+            redirectTo: `${appUrl}/auth/callback`
+          } as any);
+          if (inviteError) {
+            console.log('Invite failed, falling back to reset email:', inviteError);
+            const { error: resetError } = await supabase.auth.resetPasswordForEmail(salonData.adminEmail, {
+              redirectTo: `${appUrl}/auth/callback`
+            });
+            if (resetError) {
+              console.log('Reset email failed:', resetError);
+            } else {
+              console.log('📧 Sent password reset email as fallback');
+            }
+          } else {
+            console.log('📧 Invitation email sent to admin');
+          }
+        } catch (e) {
+          console.log('Invite/reset attempt threw, ignoring:', e);
+        }
       }
 
       // Create the salon record
